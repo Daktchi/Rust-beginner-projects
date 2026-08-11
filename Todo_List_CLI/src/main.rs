@@ -6,6 +6,7 @@
 /// I have use clone and marked it to review because it says it is not recommended cause of memory leak I guess even if not inside this program
 /// Still about that clone I made. I would like to know how I can't use it if possible
 /// Also the main elements are all inside some loops. Make me know if it feels ugly the way it is done
+/// Also a warning appear when run the program. It works, but I don't know how can I change it
 
 use std::io;
 
@@ -21,7 +22,7 @@ pub fn require_option() -> Option<i32> {//Control that the user has entered a va
                 if num >= 0 && num <= 4 {//Range of options
                     num
                 } else {
-                    println!("\n〜〜〜Please! The option value should be from the option list between the range 1-4〜〜〜\n\n");
+                    println!("\n〜〜〜Please! The option value should be from the option list between the range 0-4〜〜〜\n\n");
                     return None
                 }
             }
@@ -40,16 +41,15 @@ fn add_todo_in_list(mut todo_list : Vec<String>, todo_lists : &mut Vec<Vec<Strin
     loop {
 
         let mut todo : String = Default::default();
-
         io::stdin().read_line(&mut todo).expect("Error!");
-        todo_list.push(String::from(&todo));
-
-        println!("======{todo}");//TODO: Why this value doesn't change and stay the same along the whole loop??? I can't exist if the value is not "0"
 
         if todo.trim()  == "0"  {
             todo_lists.push(todo_list); //Entering "0" to exit the option
             break 0
         }
+
+        todo_list.push(String::from(&todo));
+
     }
 }
 
@@ -98,7 +98,7 @@ fn main() {
                     }
             };
 
-            if op_list_element - 1 < 0 || op_list_element - 1 > 0 { println!("List doesn't exist!"); continue; } //If there is not to_do inside a list
+            if op_list_element  <= 0 || op_list_element  > lists.len() as i32 { println!("List doesn't exist!"); continue; } //If there is not to_do inside a list
 
             for list in &todo_lists.get((op_list_element as usize) - 1){
                 for l in *list {
@@ -148,7 +148,7 @@ fn main() {
             let mut list_name : String = Default::default();
             io::stdin().read_line(&mut list_name).expect("Enter a value");//Handle the case when there is no value
 
-            if op_list_element <= 0 || op_list_element >= 0 { println!("List doesn't exist!"); continue; };
+            if op_list_element <= 0 || op_list_element >= (lists.len() +1) as i32 { println!("List doesn't exist!"); continue; };
 
             lists[(op_list_element - 1) as usize] = String::from(list_name);//Rename the list name
 
