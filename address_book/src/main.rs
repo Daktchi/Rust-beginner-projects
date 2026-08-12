@@ -7,7 +7,7 @@ struct Contact{
     phone : i32,
 }
 
-fn create_carnet(contact: Contact) -> std::io::Result<()> {
+fn create_address_book(contact: Contact) -> std::io::Result<()> {
 
     // let mut f = File::create_new("carnet.txt")?;
     //
@@ -20,7 +20,7 @@ fn create_carnet(contact: Contact) -> std::io::Result<()> {
 
 }
 
-fn read_carnet()->std::io::Result<()> {//Reading contacts from carnet list
+fn read_address_book()->std::io::Result<()> {//Reading contacts from carnet list
 
     let mut file = File::open("carnet.txt")?;
     let mut contents = String::new();
@@ -39,11 +39,11 @@ fn read_carnet()->std::io::Result<()> {//Reading contacts from carnet list
 fn remove_contact(contact: i32, mut contacts :Vec<String>)->std::io::Result<()> {//Removing a contact by its ID number
 
     contacts.remove((contact-1) as usize);//Removing of the contact at its exact position
-    fs::remove_file("carnet.txt")?; //The old carnet is removed
+    fs::remove_file("carnet.txt")?; //The old address book is removed
 
     let _ = File::create("carnet.txt");//Recreating a new contact
     let mut f = File::options().append(true).open("carnet.txt")?;
-    for contact in contacts {//Updating the new carnet with the rest of contact
+    for contact in contacts {//Updating the new address book with the rest of contact
         writeln!(&mut f,"{contact}", )?;//Write and add new contact in the file
     }
 
@@ -81,7 +81,7 @@ pub fn require_option() -> Option<i32> {//Control that the user has entered a va
 fn main() {
 
     println!("\n################################################## \
-               \n#\tWELCOME TO CARNET D'ADRESSE MANAGER    \t#\
+               \n#\tWELCOME TO THE ADDRESS BOOK MANAGER    \t#\
                \n##################################################\n");
 
 
@@ -89,9 +89,9 @@ fn main() {
 
         println!("\n-----------Lists of Contact------------\n");
 
-       let _ = read_carnet();//Reading contacts from carnet list
+       let _ = read_address_book();//Reading contacts from the address book list
 
-        println!("\n1- Add a contact; \n2- Remove a contact \n0- Exit the Carnet Manager\
+        println!("\n1- Add a contact; \n2- Remove a contact \n0- Exit the address book Manager\
                 \n{}:
                 ", "Choose an option".to_uppercase());
 
@@ -123,7 +123,7 @@ fn main() {
                 phone
             };
 
-            let _ = create_carnet(contact);
+            let _ = create_address_book(contact);
 
 
         }else if option == 2 {
@@ -167,7 +167,7 @@ fn main() {
 
         }else if option == 0 {
 
-            println!("Carnet exited successfully !");
+            println!("Address book exited successfully !");
             break;
 
         }else {

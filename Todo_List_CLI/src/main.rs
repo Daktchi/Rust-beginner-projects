@@ -1,3 +1,4 @@
+use std::ffi::NulError;
 ///
 /// TODOList CLI
 ///
@@ -9,7 +10,43 @@
 /// Also a warning appear when run the program. It works, but I don't know how can I change it
 
 use std::io;
+use std::str::FromStr;
+use std::fs::File;
 
+#[derive(Debug)]
+enum Todo{
+    Show,
+    Add,
+    Rename,
+    Remove,
+    Exit,
+}
+
+#[derive(Debug)]
+struct ParsePointError;
+impl FromStr for Todo{//Implementing FromStr trait to Todo enum
+    type Err = ParsePointError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let opt = s.parse::<i32>().map_err(|_| ParsePointError)?;
+        // let opt = s.parse();
+        println!("{:?}", opt);
+        if opt == 1 {//Showing list0
+            Ok(Todo::Show)
+        }else if opt == 2 {//Adding a list
+            Ok(Todo::Add)
+        }else if opt == 3 {//Renaming a list
+            Ok(Todo::Rename)
+        }else if opt == 4 { //Removing a list
+            Ok(Todo::Remove)
+        }else if opt == 0 { //Exit
+            Ok(Todo::Exit)
+        }else {//Exit too
+            println!("The option doesn't exit here at all. Please choose a valid option. ");
+            Err(ParsePointError)
+        }
+
+    }
+}
 pub fn require_option() -> Option<i32> {//Control that the user has entered a valid number option required
 
     //TOP OPTION REQUIREMENT.
@@ -81,107 +118,112 @@ fn main() {
                 \nChoose an option :
                 ");
 
-        let option = match require_option() {// The user's input option
-            Some(value) => value,
-            None => continue,
-        };
+        let mut option_from_user = Default::default();
+        io::stdin().read_line(&mut option_from_user).expect("Please enter a value");
+        let option = Todo::from_str(&option_from_user.trim());//For managing option form user input
 
-        if option == 1 { //Showing the list && Adding to a list
+        match option {//Catching and executing the option that matches
 
-            println!("\nEnter the number of the list of element : \n");
+            Ok(Todo::Show) => {
 
-            let op_list_element : i32 = match require_option() { //take the user option
-                Some(num) => num,
-                None => {
+                println!("\nEnter the number of the list of element : \n");
+
+                let op_list_element : i32 = match require_option() { //take the user option
+                    Some(num) => num,
+                    None => {
                         println!("Enter a number !");
                         continue
                     }
-            };
+                };
 
-            if op_list_element  <= 0 || op_list_element  > lists.len() as i32 { println!("List doesn't exist!"); continue; } //If there is not to_do inside a list
+                if op_list_element  <= 0 || op_list_element  > lists.len() as i32 { println!("List doesn't exist!"); continue; } //If there is not to_do inside a list
 
-            for list in &todo_lists.get((op_list_element as usize) - 1){
-                for l in *list {
-                    println!("{}", l);
+                for list in &todo_lists.get((op_list_element as usize) - 1){
+                    for l in *list {
+                        println!("{}", l);
+                    }
+                    break;
                 }
+
+                println!("\n\n\n");
+            },
+            Ok(Todo::Add) => {
+
+                println!("\nEnter the name of the list : ");
+
+                let mut list_name : String = Default::default();
+                io::stdin().read_line(&mut list_name).expect("Enter a value");//Handle the case when there is no value
+
+                lists.push(list_name.clone());//Adding the list. Todo : {To review}
+                let mut count = 0;
+
+                for i in &lists {
+                    count += 1;
+                    println!("{count} - {i}");
+                }
+
+
+                let todo_list: Vec<String> = Vec::new();
+
+                println!("Add a todo to the {} list. Tape 0 to exit ", list_name);
+
+                add_todo_in_list(todo_list, &mut todo_lists);//Adding to_do elements inside a list
+
+            },
+            Ok(Todo::Rename) => {
+
+                println!("Choose the list number you want to rename :");
+
+                let op_list_element : i32 = match require_option() { //take the user option
+                    Some(num) => num,
+                    None => {
+                        println!("Enter a number !");
+                        continue
+                    }
+                };
+
+                println!("Enter the name you want to rename : ");
+                let mut list_name : String = Default::default();
+                io::stdin().read_line(&mut list_name).expect("Enter a value");//Handle the case when there is no value
+
+                if op_list_element <= 0 || op_list_element >= (lists.len() +1) as i32 { println!("List doesn't exist!"); continue; };
+
+                lists[(op_list_element - 1) as usize] = String::from(list_name);//Rename the list name
+
+
+            },
+            Ok(Todo::Remove) =>{
+
+                println!("-------Enter the number label of the list that you wan to delete---------");
+
+                let op_list_element : i32 = match require_option() { //take the user option
+                    Some(num) => num,
+                    None => {
+                        println!("Enter a number !");
+                        continue
+                    }
+                };
+
+                if op_list_element > 0 && op_list_element <= lists.len() as i32  {
+                    lists.remove((op_list_element - 1) as usize);
+                    todo_lists.remove((op_list_element - 1) as usize);
+
+                    println!("********List removed successfully**********\n\n");
+
+                }else {
+                    println!("********The list you want to delete doesn't exist*********\n\n");
+                };
+
+            },
+            Ok(Todo::Exit) =>{
+
+                println!("TodoList exited successfully !");
                 break;
+
             }
-
-            println!("\n\n\n");
-
-
-        }else if option == 2 { //Adding a list
-
-            println!("\nEnter the name of the list : ");
-
-            let mut list_name : String = Default::default();
-            io::stdin().read_line(&mut list_name).expect("Enter a value");//Handle the case when there is no value
-
-            lists.push(list_name.clone());//Adding the list. Todo : {To review}
-            let mut count = 0;
-
-            for i in &lists {
-                count += 1;
-                println!("{count} - {i}");
+            Err(_) =>{
+                continue
             }
-
-            let todo_list: Vec<String> = Vec::new();
-
-            println!("Add a todo to the {} list. Tape 0 to exit ", list_name);
-
-            add_todo_in_list(todo_list, &mut todo_lists);//Adding to_do elements inside a list
-
-
-        }else if option == 3 {
-
-            println!("Choose the list number you want to rename :");
-
-            let op_list_element : i32 = match require_option() { //take the user option
-                Some(num) => num,
-                None => {
-                    println!("Enter a number !");
-                    continue
-                }
-            };
-
-            println!("Enter the name you want to rename : ");
-            let mut list_name : String = Default::default();
-            io::stdin().read_line(&mut list_name).expect("Enter a value");//Handle the case when there is no value
-
-            if op_list_element <= 0 || op_list_element >= (lists.len() +1) as i32 { println!("List doesn't exist!"); continue; };
-
-            lists[(op_list_element - 1) as usize] = String::from(list_name);//Rename the list name
-
-
-        }else if option == 4 {
-
-            println!("-------Enter the number label of the list that you wan to delete---------");
-
-            let op_list_element : i32 = match require_option() { //take the user option
-                Some(num) => num,
-                None => {
-                    println!("Enter a number !");
-                    continue
-                }
-            };
-
-            if op_list_element > 0 && op_list_element <= lists.len() as i32  {
-                lists.remove((op_list_element - 1) as usize);
-                todo_lists.remove((op_list_element - 1) as usize);
-
-                println!("********List removed successfully**********\n\n");
-
-            }else {
-                println!("********The list you want to delete doesn't exist*********\n\n");
-            };
-
-        }else if option == 0 {
-
-            println!("TodoList exited successfully !");
-            break;
-
-        }else {
-            panic!("Error!");
         }
 
     }

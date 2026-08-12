@@ -1,5 +1,5 @@
 [package]
-name = "Carnet_d_adresses"
+name = "address_book"
 version = "0.1.0"
 edition = "2024"
 
